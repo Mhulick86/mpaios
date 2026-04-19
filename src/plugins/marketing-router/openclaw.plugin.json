@@ -1,0 +1,55 @@
+{
+  "id": "marketing-router",
+  "name": "Marketing Router",
+  "description": "Routes inbound conversational messages through mpaios marketing templates (sequences, churn win-back, surveys) and steers outbound replies via openclaw's prompt pipeline.",
+  "configSchema": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+      "enabled": { "type": "boolean" },
+      "agents": {
+        "type": "array",
+        "items": { "type": "string" }
+      },
+      "defaultSequenceId": { "type": "string" },
+      "allowedChatTypes": {
+        "type": "array",
+        "items": {
+          "type": "string",
+          "enum": ["direct", "group", "channel"]
+        }
+      },
+      "surveyTrigger": {
+        "type": "string",
+        "enum": ["off", "post-support", "custom"]
+      },
+      "logging": { "type": "boolean" }
+    }
+  },
+  "uiHints": {
+    "enabled": {
+      "label": "Marketing Router",
+      "help": "Enable or pause the marketing router while keeping commands available."
+    },
+    "agents": {
+      "label": "Target Agents",
+      "help": "Agent ids that receive marketing routing. Empty means all."
+    },
+    "defaultSequenceId": {
+      "label": "Default Sequence",
+      "help": "Sequence id used for new conversations. Defaults to 'welcome'."
+    },
+    "allowedChatTypes": {
+      "label": "Allowed Chat Types",
+      "help": "Chat types eligible for routing. Defaults to direct."
+    },
+    "surveyTrigger": {
+      "label": "Survey Trigger",
+      "help": "Which survey flow to attach after support sessions close."
+    },
+    "logging": {
+      "label": "Enable Logging",
+      "help": "Emit router decisions to the gateway log."
+    }
+  }
+}
