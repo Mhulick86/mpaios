@@ -20,3 +20,13 @@ export {
   makePostSupportSurvey,
   stepSurvey,
 } from "./templates/inboundSurvey.js";
+export { route } from "./router.js";
+export type { InboundContext, RouterDecision } from "./router.js";
+export {
+  handleInbound,
+  renderViaOpenclaw,
+} from "./openclawBridge.js";
+export type {
+  HandleInboundArgs,
+  RenderedReply,
+} from "./openclawBridge.js";
