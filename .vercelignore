@@ -1,0 +1,10 @@
+dist
+node_modules
+.claude
+docs
+scripts
+src/boot.ts
+src/index.ts
+src/plugins
+.git
+*.log

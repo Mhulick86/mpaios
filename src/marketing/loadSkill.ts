@@ -3,6 +3,7 @@ import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { dirname } from "node:path";
 import type { LoadedSkill, SkillFrontmatter } from "./types.js";
+import { BUNDLED_SKILLS, BUNDLED_SKILL_NAMES } from "./generated/skills.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -55,18 +56,28 @@ export async function loadSkill(
   root: string = DEFAULT_SKILLS_ROOT,
 ): Promise<LoadedSkill> {
   const path = join(root, name, "SKILL.md");
-  const raw = await readFile(path, "utf8");
-  return parseSkill(raw, path);
+  try {
+    const raw = await readFile(path, "utf8");
+    return parseSkill(raw, path);
+  } catch {
+    const bundled = BUNDLED_SKILLS[name];
+    if (!bundled) throw new Error(`Skill not found: ${name}`);
+    return parseSkill(bundled, `bundled:${name}`);
+  }
 }
 
 export async function listSkills(
   root: string = DEFAULT_SKILLS_ROOT,
 ): Promise<string[]> {
-  const entries = await readdir(root, { withFileTypes: true });
-  return entries
-    .filter((e) => e.isDirectory())
-    .map((e) => e.name)
-    .sort();
+  try {
+    const entries = await readdir(root, { withFileTypes: true });
+    return entries
+      .filter((e) => e.isDirectory())
+      .map((e) => e.name)
+      .sort();
+  } catch {
+    return [...BUNDLED_SKILL_NAMES];
+  }
 }
 
 export async function loadAllSkills(
@@ -74,4 +85,14 @@ export async function loadAllSkills(
 ): Promise<LoadedSkill[]> {
   const names = await listSkills(root);
   return Promise.all(names.map((n) => loadSkill(n, root)));
+}
+
+export function loadSkillBundled(name: string): LoadedSkill {
+  const raw = BUNDLED_SKILLS[name];
+  if (!raw) throw new Error(`Skill not found in bundle: ${name}`);
+  return parseSkill(raw, `bundled:${name}`);
+}
+
+export function listSkillsBundled(): string[] {
+  return [...BUNDLED_SKILL_NAMES];
 }
