@@ -1,0 +1,20 @@
+mpaios
+Copyright (c) 2026 mpaios contributors
+
+This product includes ideas and structural conventions inspired by
+"marketingskills" by Corey Haines and contributors
+(https://github.com/coreyhaines31/marketingskills), distributed under
+the MIT License.
+
+No verbatim files from marketingskills are included. The skills under
+`.claude/skills/` and the runtime modules under `src/marketing/` are
+mpaios-specific variations written for a conversational WhatsApp
+runtime (openclaw). Where upstream skill names survive (e.g.
+`customer-research`, `churn-prevention`, `copywriting`, `copy-editing`,
+`marketing-psychology`, `launch-strategy`, `referral-program`,
+`analytics-tracking`, `ab-test-setup`, `product-marketing-context`),
+the content has been rewritten against mpaios positioning, audience,
+and runtime surface.
+
+Upstream MIT license text:
+https://github.com/coreyhaines31/marketingskills/blob/main/LICENSE

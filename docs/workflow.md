@@ -77,6 +77,48 @@ flowchart LR
     idx -->|"persist state"| E
 ```
 
+## 4. Marketing layer
+
+```mermaid
+flowchart LR
+    subgraph AuthorTime[".claude/skills (author-time)"]
+      PMC[product-marketing-context]
+      CW[cold-whatsapp-outreach]
+      WS[whatsapp-sequence]
+      CR[customer-research]
+      CP[churn-prevention]
+      COPY[copywriting / copy-editing]
+      GROW[launch / referral / analytics / ab-test]
+    end
+
+    subgraph Runtime["src/marketing (runtime)"]
+      LS[loadSkill]
+      T1[templates/coldWhatsapp]
+      T2[templates/whatsappSequence]
+      T3[templates/churnWinback]
+      T4[templates/inboundSurvey]
+    end
+
+    subgraph OC[openclaw]
+      APPLY[applyTemplate]
+      GETREPLY[getReplyFromConfig]
+      SESSION[session store]
+      MON[monitorWebChannel]
+    end
+
+    CW --> T1 --> APPLY
+    WS --> T2 --> APPLY
+    CP --> T3 --> MON
+    CR --> SESSION
+    LS --> AuthorTime
+    T2 --> SESSION
+```
+
+Author-time skills prime Claude Code with mpaios voice and workflows.
+Runtime templates compile those workflows into deterministic functions
+(`advanceSequence`, `evaluateChurnRisk`, `stepSurvey`) that openclaw
+can call from its reply loop.
+
 ## Assumptions & caveats
 
 - Export names suggest intent; actual call order and signatures need
