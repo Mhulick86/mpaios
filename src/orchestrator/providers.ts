@@ -24,6 +24,12 @@ export async function execute(plan: Plan): Promise<string> {
   }
 }
 
+function localAvailable(): boolean {
+  if (process.env.LMSTUDIO_BASE_URL) return true;
+  if (process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME) return false;
+  return true;
+}
+
 export function hasKeyFor(specialist: SpecialistId): boolean {
   switch (specialist) {
     case "anthropic":
@@ -33,6 +39,18 @@ export function hasKeyFor(specialist: SpecialistId): boolean {
     case "google":
       return !!process.env.GOOGLE_API_KEY;
     case "local":
-      return true;
+      return localAvailable();
   }
 }
+
+const CLOUD_ORDER: SpecialistId[] = ["anthropic", "openai", "google"];
+
+export function firstAvailable(
+  preferred: SpecialistId[],
+): SpecialistId | null {
+  for (const s of preferred) if (hasKeyFor(s)) return s;
+  for (const s of CLOUD_ORDER) if (hasKeyFor(s)) return s;
+  if (hasKeyFor("local")) return "local";
+  return null;
+}
+

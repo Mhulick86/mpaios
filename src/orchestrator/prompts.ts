@@ -1,13 +1,26 @@
 import type { ActionId, SpecialistId } from "./types.js";
 
+export interface ProviderChoice {
+  specialist: SpecialistId;
+  model: string;
+}
+
 export interface ActionConfig {
-  defaults: { specialist: SpecialistId; model: string };
+  defaults: ProviderChoice;
+  cloudFallback: ProviderChoice;
   system: string;
   userFromInput(input: Record<string, unknown>): string;
   responseFormat: "json" | "text";
   parse(raw: string): unknown;
   validate(output: unknown): string[];
 }
+
+export const SPECIALIST_MODELS: Record<SpecialistId, string> = {
+  local: "local-model",
+  anthropic: "claude-opus-4-7",
+  openai: "gpt-4o-mini",
+  google: "gemini-2.0-flash",
+};
 
 function extractJsonBlock(raw: string): string {
   const fence = raw.match(/```(?:json)?\s*([\s\S]*?)```/);
@@ -41,6 +54,7 @@ function requireKeys(value: unknown, keys: string[]): string[] {
 
 const AUDIT_GBP: ActionConfig = {
   defaults: { specialist: "google", model: "gemini-2.0-flash" },
+  cloudFallback: { specialist: "openai", model: "gpt-4o-mini" },
   responseFormat: "json",
   system: `You are a local-SEO auditor for Google Business Profile listings.
 Produce a rigorous JSON scorecard. Do not invent data; if a field is absent
@@ -76,6 +90,7 @@ response rate, special hours, appointment link.`,
 
 const CHECK_CITATIONS: ActionConfig = {
   defaults: { specialist: "local", model: "local-model" },
+  cloudFallback: { specialist: "openai", model: "gpt-4o-mini" },
   responseFormat: "json",
   system: `You detect NAP (Name/Address/Phone) inconsistencies across citation
 directories. Normalize whitespace, case, and common abbreviations (St/Street,
@@ -105,6 +120,7 @@ Return ONLY compact JSON matching:
 
 const REVIEW_GENERATION: ActionConfig = {
   defaults: { specialist: "anthropic", model: "claude-opus-4-7" },
+  cloudFallback: { specialist: "openai", model: "gpt-4o-mini" },
   responseFormat: "text",
   system: `You write brand-safe replies to customer reviews. Keep it human,
 warm, and specific. 2-4 sentences. Thank by first name if provided. For
@@ -128,6 +144,7 @@ contact details. No emojis unless the brand voice permits it.`,
 
 const COMPETITOR_SCAN: ActionConfig = {
   defaults: { specialist: "openai", model: "gpt-4o-mini" },
+  cloudFallback: { specialist: "anthropic", model: "claude-opus-4-7" },
   responseFormat: "json",
   system: `You are a competitive analyst for local businesses. Given our
 profile and up to 3 competitors, produce an actionable diff.
