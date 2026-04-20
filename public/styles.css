@@ -1,8 +1,26 @@
+html,
+body {
+  -webkit-text-size-adjust: 100%;
+}
+.qa-btn,
+.btn-primary,
+.btn-secondary {
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
 .qa-btn {
   border: 1px solid transparent;
+  min-height: 52px;
+  line-height: 1.25;
 }
-.qa-btn:hover {
-  filter: brightness(0.97);
+@media (hover: hover) {
+  .qa-btn:hover {
+    filter: brightness(0.97);
+  }
+}
+.qa-btn:active {
+  filter: brightness(0.95);
 }
 .qa-blue {
   background: #eff6ff;
@@ -35,16 +53,18 @@
 .field textarea,
 .field select {
   width: 100%;
-  padding: 0.5rem 0.75rem;
+  padding: 0.625rem 0.75rem;
   border: 1px solid #d1d5db;
   border-radius: 0.5rem;
-  font-size: 0.9375rem;
+  font-size: 16px;
   background: #fff;
+  min-height: 44px;
 }
 .field textarea {
   font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-  font-size: 0.8125rem;
+  font-size: 16px;
   min-height: 7rem;
+  line-height: 1.45;
 }
 .field input:focus,
 .field textarea:focus,
@@ -57,10 +77,14 @@
 .btn-primary {
   background: #111827;
   color: #fff;
-  padding: 0.5rem 1rem;
+  padding: 0.625rem 1.25rem;
   border-radius: 0.5rem;
   font-weight: 500;
-  font-size: 0.875rem;
+  font-size: 0.9375rem;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 .btn-primary:disabled {
   opacity: 0.6;
@@ -69,10 +93,14 @@
 .btn-secondary {
   background: #f3f4f6;
   color: #111827;
-  padding: 0.5rem 1rem;
+  padding: 0.625rem 1.25rem;
   border-radius: 0.5rem;
   font-weight: 500;
-  font-size: 0.875rem;
+  font-size: 0.9375rem;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .result-json {

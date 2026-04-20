@@ -14,7 +14,7 @@ const actions = {
         label: "Address",
         default: "123 Main St, Austin, TX 78701",
       },
-      { name: "phone", label: "Phone", default: "+1 512-555-0134" },
+      { name: "phone", label: "Phone", type: "tel", default: "+1 512-555-0134" },
       { name: "website", label: "Website", default: "https://acmedental.com" },
       {
         name: "photosCount",
@@ -66,7 +66,7 @@ const actions = {
         label: "Canonical address",
         default: "123 Main St, Austin, TX 78701",
       },
-      { name: "phone", label: "Canonical phone", default: "+1 512-555-0134" },
+      { name: "phone", label: "Canonical phone", type: "tel", default: "+1 512-555-0134" },
       {
         name: "citations",
         label: "Citations (JSON array)",
@@ -248,21 +248,23 @@ function renderPanel(actionId) {
   const cfg = actions[actionId];
   const fieldsHtml = cfg.fields.map(fieldHtml).join("");
   panel.innerHTML = `
-    <div class="flex items-center justify-between mb-3">
-      <div>
-        <h2 class="text-lg font-semibold">${escapeHtml(cfg.title)}</h2>
-        <p class="text-sm text-gray-500">${escapeHtml(cfg.description)}</p>
+    <div class="mb-4">
+      <div class="flex items-start justify-between gap-3">
+        <h2 class="text-lg font-semibold leading-tight min-w-0 flex-1">${escapeHtml(cfg.title)}</h2>
+        <button type="button" id="panel-close" class="btn-secondary shrink-0" aria-label="Close">Close</button>
       </div>
-      <button type="button" id="panel-close" class="btn-secondary">Close</button>
+      <p class="text-sm text-gray-500 mt-1">${escapeHtml(cfg.description)}</p>
     </div>
     <form id="panel-form">
       ${fieldsHtml}
-      <div class="flex items-center gap-2 mt-2">
-        <button type="submit" class="btn-primary" id="run-btn">Run</button>
-        <span class="text-xs text-gray-400">POST /api/quick-actions/${actionId}</span>
+      <div class="flex flex-col sm:flex-row sm:items-center sm:gap-3 mt-3">
+        <button type="submit" class="btn-primary w-full sm:w-auto" id="run-btn">Run</button>
+        <span class="hidden sm:inline text-xs text-gray-400 break-all">POST /api/quick-actions/${actionId}</span>
       </div>
     </form>
   `;
+  result.classList.add("hidden");
+  result.innerHTML = "";
   panel.classList.remove("hidden");
   panel.scrollIntoView({ behavior: "smooth", block: "start" });
 
@@ -290,6 +292,9 @@ async function runAction(actionId, formData) {
   btn.disabled = true;
   btn.innerHTML = `<span class="spinner"></span>Running…`;
   showLoading();
+  // Surface the loading state on small screens where the result section is
+  // below the submit button — otherwise the tap feels like it did nothing.
+  result.scrollIntoView({ behavior: "smooth", block: "nearest" });
 
   const started = performance.now();
   try {
@@ -363,11 +368,11 @@ function renderResult(actionId, data, clientMs) {
     : "";
 
   result.innerHTML = `
-    <div class="flex items-center justify-between flex-wrap gap-2">
-      <h2 class="text-lg font-semibold">Result · ${escapeHtml(actions[actionId].title)}</h2>
+    <div class="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+      <h2 class="text-lg font-semibold leading-tight">Result · ${escapeHtml(actions[actionId].title)}</h2>
       <div class="flex items-center gap-2 flex-wrap">${headerPills}</div>
     </div>
-    <p class="text-xs text-gray-500 mt-1">
+    <p class="text-xs text-gray-500 mt-2 break-words">
       server: ${latency != null ? latency + "ms" : "—"} · client: ${clientMs}ms
       ${plan.reasoning ? ` · plan: ${escapeHtml(plan.reasoning)}` : ""}
     </p>
