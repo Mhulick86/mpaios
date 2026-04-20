@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>mpaios · Quick Actions</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body class="bg-gray-100 min-h-screen text-gray-900 antialiased">
+    <main class="max-w-3xl mx-auto py-10 px-4">
+      <header class="mb-8">
+        <h1 class="text-2xl font-semibold">mpaios</h1>
+        <p class="text-gray-500 text-sm">Local SEO · Quick Actions</p>
+      </header>
+
+      <section class="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
+        <h2 class="text-lg font-semibold mb-4">Quick Actions</h2>
+        <div class="space-y-3">
+          <button
+            type="button"
+            data-action="audit-gbp"
+            class="qa-btn qa-blue w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left font-medium transition"
+          >
+            <svg class="w-5 h-5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M3 21h18M5 21V7l7-4 7 4v14M9 9h.01M15 9h.01M9 13h.01M15 13h.01M9 17h.01M15 17h.01" />
+            </svg>
+            <span>Audit GBP Listing</span>
+          </button>
+          <button
+            type="button"
+            data-action="check-citations"
+            class="qa-btn qa-green w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left font-medium transition"
+          >
+            <svg class="w-5 h-5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <circle cx="12" cy="12" r="10" />
+              <path d="M2 12h20M12 2a15 15 0 0 1 0 20M12 2a15 15 0 0 0 0 20" />
+            </svg>
+            <span>Check Citations</span>
+          </button>
+          <button
+            type="button"
+            data-action="review-generation"
+            class="qa-btn qa-purple w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left font-medium transition"
+          >
+            <svg class="w-5 h-5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+            </svg>
+            <span>Review Generation</span>
+          </button>
+          <button
+            type="button"
+            data-action="competitor-scan"
+            class="qa-btn qa-orange w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left font-medium transition"
+          >
+            <svg class="w-5 h-5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M3 3v18h18" />
+              <rect x="7" y="12" width="3" height="6" />
+              <rect x="12" y="8" width="3" height="10" />
+              <rect x="17" y="4" width="3" height="14" />
+            </svg>
+            <span>Competitor Scan</span>
+          </button>
+        </div>
+      </section>
+
+      <section id="panel" class="hidden mt-6 bg-white rounded-2xl shadow-sm border border-gray-200 p-6"></section>
+
+      <section id="result" class="hidden mt-6 bg-white rounded-2xl shadow-sm border border-gray-200 p-6"></section>
+    </main>
+
+    <script src="/app.js" type="module"></script>
+  </body>
+</html>
