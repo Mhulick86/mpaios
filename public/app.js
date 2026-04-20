@@ -1,5 +1,35 @@
 const panel = document.getElementById("panel");
 const result = document.getElementById("result");
+const authChip = document.getElementById("auth-chip");
+const authEmail = document.getElementById("auth-email");
+const logoutBtn = document.getElementById("logout-btn");
+
+(async function bootstrapAuth() {
+  try {
+    const res = await fetch("/api/auth/me", { credentials: "include" });
+    const data = await res.json();
+    if (!data.authenticated) {
+      window.location.replace("/login.html");
+      return;
+    }
+    authEmail.textContent = data.email;
+    authChip.classList.remove("hidden");
+    authChip.classList.add("flex");
+  } catch {
+    window.location.replace("/login.html");
+  }
+})();
+
+logoutBtn?.addEventListener("click", async () => {
+  try {
+    await fetch("/api/auth/logout", {
+      method: "POST",
+      credentials: "include",
+    });
+  } finally {
+    window.location.replace("/login.html");
+  }
+});
 
 const actions = {
   "audit-gbp": {
@@ -302,7 +332,12 @@ async function runAction(actionId, formData) {
       method: "POST",
       headers: { "content-type": "application/json" },
       body: JSON.stringify(payload),
+      credentials: "include",
     });
+    if (res.status === 401) {
+      window.location.replace("/login.html");
+      return;
+    }
     const clientMs = Math.round(performance.now() - started);
     const text = await res.text();
     let json;

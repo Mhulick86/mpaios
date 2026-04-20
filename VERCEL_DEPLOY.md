@@ -28,7 +28,26 @@ Vercel adds it; check before the first push.
 
 ## Step 2 — Set production environment variables
 
-Add each key you have access to:
+**Auth — required.** Without `JWT_SECRET` the sign-up / log-in
+endpoints crash on the first request.
+
+```bash
+# generate a 48-byte random secret and set it
+node -e "console.log(require('crypto').randomBytes(48).toString('base64url'))" \
+  | pnpm dlx vercel env add JWT_SECRET production
+```
+
+**User store — required for production.** The default file-backed
+store only works in local dev (Vercel's filesystem is read-only).
+Attach a Redis/KV integration from the Vercel Marketplace:
+
+1. Vercel dashboard → your project → **Storage** tab.
+2. Click **Create Database** → pick **Upstash Redis** (free tier).
+3. Accept the defaults; Vercel auto-populates `KV_URL`,
+   `KV_REST_API_URL`, and `KV_REST_API_TOKEN` for you.
+4. Redeploy so the new envs are picked up.
+
+**Provider keys — at least one.**
 
 ```bash
 pnpm dlx vercel env add ANTHROPIC_API_KEY production

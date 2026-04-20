@@ -1,3 +1,4 @@
+import { requireSession } from "../auth/guard.js";
 import { dispatch } from "./dispatch.js";
 import type { ActionId } from "./types.js";
 
@@ -10,6 +11,9 @@ function json(body: unknown, status = 200): Response {
 
 export function quickActionHandler(action: ActionId) {
   return async function handler(request: Request): Promise<Response> {
+    const gate = await requireSession(request);
+    if (gate instanceof Response) return gate;
+
     if (request.method !== "POST") return json({ error: "POST required" }, 405);
 
     let input: Record<string, unknown>;

@@ -103,6 +103,19 @@ body {
   justify-content: center;
 }
 
+.tab-btn {
+  background: #f3f4f6;
+  color: #4b5563;
+  transition: background-color 0.1s;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  min-height: 40px;
+}
+.tab-btn.tab-active {
+  background: #111827;
+  color: #fff;
+}
+
 .result-json {
   background: #0b1020;
   color: #e5e7eb;
