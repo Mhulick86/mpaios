@@ -174,3 +174,46 @@ Author-time skills prime Claude Code with mpaios voice and workflows.
 Runtime templates compile those workflows into deterministic functions
 (`advanceSequence`, `evaluateChurnRisk`, `stepSurvey`) that openclaw
 can call from its reply loop.
+
+## 6. Quick Actions orchestrator
+
+Each Quick Action button POSTs to a serverless endpoint under
+`api/quick-actions/`. A local LM Studio model plans the request, a
+specialist executes it, and the plan falls back to the local model when
+a specialist is unreachable or its key is missing.
+
+```mermaid
+flowchart TD
+    UI[["Quick Actions UI<br/>(Audit GBP / Check Citations /<br/>Review Generation / Competitor Scan)"]]
+    UI -->|POST /api/quick-actions/&lt;name&gt;| H["quickActionHandler"]
+    H --> D["dispatch(task)"]
+
+    D --> P["planner<br/>(src/orchestrator/planner.ts)"]
+    P -->|JSON: specialist + model| LM["LM Studio<br/>(OPENAI-compat /v1)"]
+    P -->|plan| X["execute(plan)"]
+
+    X -->|anthropic| A["@anthropic-ai/sdk<br/>claude-opus-4-7<br/>adaptive thinking +<br/>prompt caching"]
+    X -->|openai| O["OpenAI API<br/>gpt-4o-mini<br/>JSON mode"]
+    X -->|google| G["Gemini API<br/>gemini-2.0-flash<br/>JSON mode"]
+    X -->|local| L["LM Studio<br/>(OpenAI-compat)"]
+
+    A -- error / no key --> L
+    O -- error / no key --> L
+    G -- error / no key --> L
+
+    X --> R["parse + validate<br/>(per-action schema)"]
+    R -->|DispatchResult JSON| UI
+```
+
+Defaults per action (overridable by the planner or by env keys):
+
+| Action | Default specialist | Model |
+| --- | --- | --- |
+| `audit-gbp` | google | `gemini-2.0-flash` |
+| `check-citations` | local | LM Studio loaded model |
+| `review-generation` | anthropic | `claude-opus-4-7` |
+| `competitor-scan` | openai | `gpt-4o-mini` |
+
+The planner is the only mandatory LM Studio call — specialists are
+optional and each degrades to local if their key is absent or the
+provider errors.

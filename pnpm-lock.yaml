@@ -8,6 +8,9 @@ importers:
 
   .:
     dependencies:
+      '@anthropic-ai/sdk':
+        specifier: ^0.90.0
+        version: 0.90.0(zod@4.3.6)
       openclaw:
         specifier: ^2026.4.15
         version: 2026.4.15(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0)(@napi-rs/canvas@0.1.99)(@types/express@5.0.6)(apache-arrow@18.1.0)(hono@4.12.14)(react-dom@19.2.5(react@19.2.5))(react@19.2.5)(typescript@5.9.3)
