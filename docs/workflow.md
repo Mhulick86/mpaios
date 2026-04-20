@@ -1,83 +1,139 @@
 # mpaios ↔ openclaw workflow
 
-Inferred from the public exports of `openclaw@2026.4.15` and its npm
-description ("WhatsApp gateway CLI (Baileys web) with Pi RPC agent").
-Treat as a map, not a spec — confirm against upstream docs before wiring
-production logic.
+Grounded in `openclaw@2026.4.15` — package manifest describes it as a
+*"Multi-channel AI gateway with extensible messaging integrations"*.
+The name is **open Cla(ude)**: Claude is the brain, openclaw is the
+multi-channel body that plugs it into any messaging platform.
 
-## 1. Startup
+## 1. Architecture
+
+openclaw's core is a switchboard. Everything pluggable lives under
+`node_modules/openclaw/dist/extensions/` as either a **channel** (where
+the user talks) or a **provider** (the LLM doing the thinking).
+
+```mermaid
+flowchart LR
+    subgraph channels["channel plugins"]
+      direction TB
+      CH1["whatsapp<br/>(Baileys)"]
+      CH2["telegram"]
+      CH3["slack / discord /<br/>imessage / signal /<br/>matrix / …"]
+    end
+
+    subgraph core["openclaw core"]
+      direction TB
+      Router["router<br/>(getReplyFromConfig,<br/>applyTemplate)"]
+      Session["session store<br/>(loadSessionStore,<br/>saveSessionStore)"]
+      Exec["runExec /<br/>runCommandWithTimeout"]
+    end
+
+    subgraph providers["provider plugins"]
+      direction TB
+      ANT["anthropic<br/>(claude-* models)"]
+      OAI["openai"]
+      GOO["google / bedrock /<br/>vertex / groq /<br/>ollama / …"]
+    end
+
+    channels <-->|inbound msg /<br/>outbound reply| core
+    core -->|chosen by model prefix| providers
+```
+
+## 2. Startup
 
 ```mermaid
 flowchart TD
     Dev([pnpm dev / start]) --> Entry["src/index.ts<br/>mpaios consumer"]
-    Entry -->|import| OC["openclaw package"]
+    Entry -->|import 'openclaw'| OC["openclaw package"]
 
-    subgraph Boot["openclaw boot sequence"]
+    subgraph Boot["openclaw boot"]
       direction TB
-      LC["loadConfig()"] --> RSK["resolveSessionKey<br/>deriveSessionKey"]
-      RSK --> EPA["ensurePortAvailable<br/>(describePortOwner on conflict)"]
-      EPA --> LSS["loadSessionStore<br/>(resolveStorePath)"]
-      LSS --> RLE["runLegacyCliEntry()"]
+      LC["loadConfig()"] --> RSK["resolveSessionKey /<br/>deriveSessionKey"]
+      RSK --> EPA["ensurePortAvailable"]
+      EPA --> LSS["loadSessionStore"]
+      LSS --> Plugins["load enabled<br/>channel + provider plugins"]
+      Plugins --> RLE["runLegacyCliEntry()"]
     end
 
     OC --> Boot
-    EPA -. PortInUseError .-> HPE["handlePortError"]
+    EPA -. PortInUseError .-> HPE["handlePortError<br/>(describePortOwner)"]
 
-    RLE --> WA["Baileys WhatsApp<br/>Web client"]
-    RLE --> MWC["monitorWebChannel<br/>(Pi RPC agent)"]
+    RLE --> Listen["channel listeners<br/>+ monitorWebChannel"]
 ```
 
-## 2. Inbound message → reply
+## 3. User question → Claude reply
+
+This is the path for a free-form question (no static template match).
 
 ```mermaid
 sequenceDiagram
     autonumber
-    actor User as WhatsApp user
-    participant WA as Baileys client
+    actor User as user
+    participant Ch as channel plugin<br/>(e.g. whatsapp)
     participant Core as openclaw core
-    participant RPC as Pi RPC agent<br/>(monitorWebChannel)
-    participant Cfg as config +<br/>templates
+    participant Prov as anthropic plugin
+    participant Claude as Claude<br/>(CLI subprocess<br/>or Anthropic API)
     participant Store as session store
 
-    User->>WA: message (phone → normalizeE164)
-    WA->>Core: onMessage
-    Core->>Cfg: getReplyFromConfig
-    alt template hit
-        Cfg->>Core: applyTemplate(vars)
-    else needs exec
-        Core->>Core: runExec / runCommandWithTimeout
+    User->>Ch: message
+    Ch->>Core: onMessage(normalizeE164 sender, text)
+    Core->>Core: getReplyFromConfig
+    alt static template hit
+        Core->>Ch: applyTemplate(vars)
+    else route to LLM
+        Core->>Prov: request (model: claude-*, history)
+        alt cliBackends = ["claude-cli"]
+            Prov->>Claude: spawn `claude` subprocess<br/>(reuses local CLI login)
+        else API key set
+            Prov->>Claude: POST api.anthropic.com/v1/messages<br/>(ANTHROPIC_API_KEY)
+        end
+        Claude-->>Prov: completion
+        Prov-->>Core: reply text
+        Core->>Ch: send reply
     end
-    Core->>RPC: forward if agent-bound
-    RPC-->>Core: agent reply
-    Core->>WA: send reply
-    WA->>User: message
+    Ch->>User: message
     Core->>Store: saveSessionStore
 ```
 
-## 3. Where mpaios plugs in
+Auth for the anthropic plugin (from
+`dist/extensions/anthropic/openclaw.plugin.json`):
+
+- `anthropic-cli` — reuse a local Claude CLI login on this host
+  (uses `ANTHROPIC_OAUTH_TOKEN`)
+- `api-key` — direct API with `ANTHROPIC_API_KEY` / `--anthropic-api-key`
+
+Model selection is by prefix: any model starting with `claude-` is
+routed to the anthropic plugin.
+
+## 4. Where mpaios plugs in
 
 ```mermaid
 flowchart LR
     subgraph mpaios
       idx["src/index.ts"]
     end
-    subgraph openclaw_api["openclaw exports"]
+    subgraph openclaw_api["openclaw surface"]
       direction TB
+      B["runLegacyCliEntry<br/>(full CLI boot)"]
       A["loadConfig"]
-      B["runLegacyCliEntry"]
-      C["monitorWebChannel"]
       D["applyTemplate /<br/>getReplyFromConfig"]
+      C["monitorWebChannel"]
       E["saveSessionStore"]
+      P["openclaw/plugin-sdk"]
     end
 
-    idx -->|"boot the CLI<br/>as-is"| B
-    idx -->|"override replies"| D
-    idx -->|"observe channel"| C
-    idx -->|"read user config"| A
-    idx -->|"persist state"| E
+    idx -->|"boot as-is"| B
+    idx -->|"read config"| A
+    idx -->|"custom replies"| D
+    idx -->|"watch channel"| C
+    idx -->|"persist"| E
+    idx -->|"add a channel or<br/>provider plugin"| P
 ```
 
-## 4. Marketing layer
+For deep customization (new channel, new provider, new skill), depend
+on the `openclaw/plugin-sdk` subpath export rather than hacking on
+core.
+
+## 5. Marketing layer
 
 ```mermaid
 flowchart LR
@@ -118,13 +174,3 @@ Author-time skills prime Claude Code with mpaios voice and workflows.
 Runtime templates compile those workflows into deterministic functions
 (`advanceSequence`, `evaluateChurnRisk`, `stepSurvey`) that openclaw
 can call from its reply loop.
-
-## Assumptions & caveats
-
-- Export names suggest intent; actual call order and signatures need
-  verification against the package source under
-  `node_modules/openclaw/dist/`.
-- `runLegacyCliEntry` likely encapsulates the full boot + message loop;
-  most consumers won't call the lower-level helpers directly.
-- The Pi RPC agent is treated as an optional parallel channel; it may be
-  gated by config.
