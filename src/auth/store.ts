@@ -62,7 +62,7 @@ let cached: UserStore | null = null;
 export async function getUserStore(): Promise<UserStore> {
   if (cached) return cached;
   if (process.env.KV_REST_API_URL || process.env.KV_URL) {
-    const mod = (await import("@vercel/kv")) as { kv: KVClient };
+    const mod = (await import("@vercel/kv")) as unknown as { kv: KVClient };
     cached = new KVUserStore(mod.kv);
   } else {
     const fallback =
