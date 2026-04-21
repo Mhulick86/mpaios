@@ -10,8 +10,7 @@
     "build:skills": "node scripts/build-skills-index.mjs",
     "build": "pnpm run build:skills && tsc",
     "start": "node dist/src/index.js",
-    "dev": "tsx src/index.ts",
-    "vercel-build": "pnpm run build:skills"
+    "dev": "tsx src/index.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.90.0",

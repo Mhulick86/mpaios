@@ -96,10 +96,10 @@ pnpm dlx vercel env add LMSTUDIO_MODEL production
 pnpm dlx vercel --prod
 ```
 
-Vercel runs `vercel-build` (compiles the skills index), detects the
-`api/*` and `api/quick-actions/*` TypeScript files as Node functions,
-and serves `public/` statically. `vercel.json` caps each function at
-10 seconds.
+Vercel runs the `buildCommand` from `vercel.json` (compiles the
+skills index), detects the `api/*` and `api/quick-actions/*`
+TypeScript files as Node functions, and serves `public/` statically.
+`vercel.json` caps each function at 10 seconds.
 
 Smoke-test with the printed URL:
 
