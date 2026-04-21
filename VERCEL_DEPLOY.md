@@ -142,6 +142,6 @@ SHA, so you can match against the commit log.
 - It does **not** run the openclaw WhatsApp/Telegram gateway. That's
   a long-lived process (Baileys socket, session store) and doesn't
   fit Vercel's 10-second function cap. For the gateway, run
-  `MPAIOS_BOOT=1 node dist/boot.js` on your own box or a VPS.
+  `MPAIOS_BOOT=1 node dist/src/boot.js` on your own box or a VPS.
 - It does not ship with the `src/index.ts` demo script — that is
   local-dev only. Production traffic only hits `api/**`.

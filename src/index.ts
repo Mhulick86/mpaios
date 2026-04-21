@@ -53,7 +53,7 @@ async function main() {
   console.log("[router] outbound bubbles:", surveyReply.bubbles);
 
   console.log(
-    "[mpaios] to actually start the WhatsApp gateway: MPAIOS_BOOT=1 node dist/boot.js",
+    "[mpaios] to actually start the WhatsApp gateway: MPAIOS_BOOT=1 node dist/src/boot.js",
   );
 }
 
